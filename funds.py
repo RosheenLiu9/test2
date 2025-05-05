@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 @st.cache_data
 def load_data():
     etf = pd.read_csv("ETFs.csv")
-    mf = pd.read_csv("MutualFunds.csv")
+    mf = pd.read_csv("ETFs.csv.gz", compression="gzip")
     return etf, mf
 
 
