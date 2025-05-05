@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 @st.cache_data
 def load_data():
     etf = pd.read_csv("ETFs.csv")
-    mf = pd.read_csv("MutualFunds.csv.zip", compression="zip")
-    return etf, mf
+    return etf
 
 
 @st.cache_resource
@@ -24,29 +23,28 @@ def train_model(data, target_col="fund_mean_annual_return_5years"):
 
 
 def main():
-    st.title("📈 Fund Return Prediction Dashboard")
+    st.title("📈 ETF Return Prediction Dashboard")
 
     st.sidebar.header("Configuration")
     show_raw_data = st.sidebar.checkbox("Show Raw Data")
-    selected_fund_type = st.sidebar.selectbox("Select Fund Type", ["ETF", "MutualFund"])
 
-    etf_data, mf_data = load_data()
-    data = etf_data if selected_fund_type == "ETF" else mf_data
+    etf_data = load_data()
 
     if show_raw_data:
         st.subheader("Raw Data Preview")
-        st.dataframe(data.head())
+        st.dataframe(etf_data.head())
 
     st.subheader("🔧 Feature Selection")
     features = st.multiselect(
         "Select Features for Prediction",
-        data.columns.drop("fund_mean_annual_return_5years"),
+        etf_data.columns.drop("fund_mean_annual_return_5years"),
         default=["fund_stdev_5years", "fund_sharpe_ratio_5years"]
     )
 
     if st.button("Train Model"):
         with st.spinner("Training the model..."):
-            model, X_test, y_test = train_model(data[features + ["fund_mean_annual_return_5years"]])
+            data = etf_data[features + ["fund_mean_annual_return_5years"]].dropna()
+            model, X_test, y_test = train_model(data)
             predictions = model.predict(X_test)
             mae = mean_absolute_error(y_test, predictions)
 
